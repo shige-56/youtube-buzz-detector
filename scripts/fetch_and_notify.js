@@ -1,5 +1,5 @@
 console.log('APIキー:', process.env.YOUTUBE_API_KEY);
-console.log('チャンネルID:', process.env.CHANNEL_ID);
+console.log('ディスコード:', process.env.DISCORD_WEBHOOK_URL);
 
 const { fetchVideos } = require('../backend/youtube-api');
 const { sendNotification } = require('../backend/discord-notify');
