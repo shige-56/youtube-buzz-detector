@@ -1,6 +1,9 @@
 name: YouTube Buzz Detector
 
 on:
+  push:
+    branches:
+      - main  # mainブランチへのプッシュで実行される
   schedule:
     - cron: '0 * * * *'  # 毎時実行
 
@@ -9,21 +12,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
 
-    - name: Install dependencies
-      run: |
-        npm install
-        pip install -r requirements.txt
+      - name: Install dependencies
+        run: |
+          npm install
+          pip install -r requirements.txt
 
-    - name: Run buzz detection
-      env:
-        YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
-        DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-      run: node scripts/fetch_and_notify.js
+      - name: Run buzz detection
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: node scripts/fetch_and_notify.js
