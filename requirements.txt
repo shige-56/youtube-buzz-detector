@@ -1,0 +1,2 @@
+textblob
+google-api-python-client
