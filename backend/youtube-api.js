@@ -5,7 +5,7 @@ async function fetchVideos() {
     const apiKey = encodeURIComponent(process.env.YOUTUBE_API_KEY);
 console.log('APIキー:', apiKey); // エンコードされたAPIキーを確認
 
-const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&order=date&type=video&maxResults=10&key=${apiKey}`;
+const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&regionCode=JP&order=date&key=${apiKey}`;
 console.log('リクエストURL:', url); // 最終的なURLの確認
 
     axios.get(url)
