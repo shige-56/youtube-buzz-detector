@@ -27,10 +27,15 @@ const predictViews = (currentViews) => currentViews * 24; // 簡易予測モデ�
 
       if (viewGrowth > 10 || likeGrowth > 5 || commentGrowth > 5) {
         await sendDiscordNotification(
-          { id: videoId, snippet },
-          { viewGrowth, likeGrowth, commentGrowth, predictViews(statistics.viewCount) },
-          sentiment
-        );
+            { id: videoId, snippet },
+            { 
+              viewGrowth, 
+              likeGrowth, 
+              commentGrowth, 
+              predictedViews: predictViews(statistics.viewCount) 
+            },
+            sentiment
+          );
       }
     }
 
