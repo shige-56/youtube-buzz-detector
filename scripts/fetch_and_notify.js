@@ -1,47 +1,39 @@
 require('dotenv').config(); // これを必ず一番上に追加
-const { fetchVideos, fetchChannelDetails } = require('../backend/youtube-api');
-const axios = require('axios');
+const { fetchRecentVideos, getVideoStats } = require('../backend/youtube-api');
+const { sendDiscordNotification } = require('../backend/discord');
+const fs = require('fs').promises;
 
-async function checkAndNotify() {
-    try {
-        const videos = await fetchVideos();
+const calculateGrowthRate = (current, previous) =>
+  ((current - previous) / previous) * 100;
 
-        for (const video of videos) {
-            const { id, snippet } = video;
-            const { channelId, title, publishedAt } = snippet;
+const predictViews = (currentViews) => currentViews * 24; // 簡易予測モデル
 
-            const subscriberCount = await fetchChannelDetails(channelId);
-            const currentViews = Math.floor(Math.random() * 50000); // 仮の再生数 (API利用制限のため)
-            const previousViews = currentViews - Math.floor(Math.random() * 10000); // 仮の前回再生数
-            const elapsedHours = (Date.now() - new Date(publishedAt)) / (1000 * 60 * 60);
+(async () => {
+  const videos = await fetchRecentVideos();
+  const previousData = JSON.parse(await fs.readFile('data.json', 'utf-8') || '{}');
 
-            const score = calculateAchievementScore(currentViews, previousViews, elapsedHours, elapsedHours - 5);
-            const message = `動画: ${title}\n再生数: ${currentViews}\n登録者数: ${subscriberCount}\n24時間達成度: ${score.toFixed(2)}%`;
+  for (const video of videos) {
+    const videoId = video.id.videoId;
+    const { statistics, snippet } = await getVideoStats(videoId);
 
-            await sendDiscordNotification(message);
-        }
-    } catch (error) {
-        console.error('エラー:', error.message);
+    if (statistics && previousData[videoId]) {
+      const previousStats = previousData[videoId].statistics;
+
+      const viewGrowth = calculateGrowthRate(statistics.viewCount, previousStats.viewCount);
+      const likeGrowth = calculateGrowthRate(statistics.likeCount, previousStats.likeCount);
+      const commentGrowth = calculateGrowthRate(statistics.commentCount, previousStats.commentCount);
+
+      const sentiment = analyzeSentiment([snippet.description]);
+
+      if (viewGrowth > 10 || likeGrowth > 5 || commentGrowth > 5) {
+        await sendDiscordNotification(
+          { id: videoId, snippet },
+          { viewGrowth, likeGrowth, commentGrowth, predictViews(statistics.viewCount) },
+          sentiment
+        );
+      }
     }
-}
 
-function calculateAchievementScore(currentViews, previousViews, currentTime, previousTime) {
-    const growthRate = (currentViews / previousViews) - 1;
-    const remainingHours = 24 - currentTime;
-    const timeInterval = currentTime - previousTime;
-    const predictedViews = currentViews * Math.pow(1 + growthRate, remainingHours / timeInterval);
-    return Math.min((predictedViews / 1_000_000) * 100, 100);
-}
-
-async function sendDiscordNotification(message) {
-    const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
-
-    try {
-        await axios.post(webhookUrl, { content: message });
-        console.log('通知を送信しました:', message);
-    } catch (error) {
-        console.error('Discord通知エラー:', error.message);
-    }
-}
-
-checkAndNotify();
+    await saveData(videoId, { statistics, snippet });
+  }
+})();

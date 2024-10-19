@@ -1,19 +1,15 @@
 {
   "name": "youtube-buzz-detector",
   "version": "1.0.0",
-  "description": "A tool to monitor and detect potentially trending YouTube videos.",
+  "description": "Detect trending YouTube videos and notify via Discord",
   "main": "scripts/fetch_and_notify.js",
-  "scripts": {
-    "start": "node scripts/fetch_and_notify.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "Your Name",
-  "license": "MIT",
   "dependencies": {
     "axios": "^1.7.7",
-    "dotenv": "^16.3.1"
+    "dotenv": "^16.0.3"
   },
-  "engines": {
-    "node": ">=18.0.0"
-  }
+  "scripts": {
+    "start": "node scripts/fetch_and_notify.js"
+  },
+  "author": "Your Name",
+  "license": "MIT"
 }

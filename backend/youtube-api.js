@@ -1,33 +1,28 @@
 const axios = require('axios');
 
-// YouTube動画情報を取得する関数
-async function fetchVideos() {
-    const apiKey = encodeURIComponent(process.env.YOUTUBE_API_KEY);
-console.log('APIキー:', apiKey); // エンコードされたAPIキーを確認
+const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
 
-const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&regionCode=JP&order=date&key=${apiKey}`;
-console.log('リクエストURL:', url); // 最終的なURLの確認
+async function fetchRecentVideos() {
+  const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&regionCode=JP&type=video&maxResults=50&order=date&key=${YOUTUBE_API_KEY}`;
+  try {
+    const response = await axios.get(url);
+    const now = new Date();
 
-    axios.get(url)
-  .then(response => {
-    console.log('APIからの応答:', response.data);
-  })
-  .catch(error => {
-    console.error('YouTube APIエラー:', error.response ? error.response.data : error.message);
-  });
+    return response.data.items.filter(video => {
+      const publishedAt = new Date(video.snippet.publishedAt);
+      const timeDiff = (now - publishedAt) / 1000 / 60;
+      return timeDiff >= 10;
+    });
+  } catch (error) {
+    console.error('YouTube APIエラー:', error.response.data);
+    return [];
+  }
 }
 
-async function fetchChannelDetails(channelId) {
-    const apiKey = process.env.YOUTUBE_API_KEY;
-    const url = `https://www.googleapis.com/youtube/v3/channels?part=statistics&id=${channelId}&key=${apiKey}`;
-
-    try {
-        const response = await axios.get(url);
-        return response.data.items[0].statistics.subscriberCount;
-    } catch (error) {
-        console.error('チャンネル詳細取得エラー:', error.message);
-        throw error;
-    }
+async function getVideoStats(videoId) {
+  const url = `https://www.googleapis.com/youtube/v3/videos?part=statistics,snippet&id=${videoId}&key=${YOUTUBE_API_KEY}`;
+  const response = await axios.get(url);
+  return response.data.items[0];
 }
 
-module.exports = { fetchVideos, fetchChannelDetails };
+module.exports = { fetchRecentVideos, getVideoStats };
