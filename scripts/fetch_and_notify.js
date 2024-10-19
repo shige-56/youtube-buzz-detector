@@ -1,4 +1,5 @@
-require('dotenv').config(); // これを必ず一番上に追加
+require('dotenv').config(); // 必ず最初に記述
+
 const { fetchRecentVideos, getVideoStats } = require('../backend/youtube-api');
 const { sendDiscordNotification } = require('../backend/discord');
 const fs = require('fs').promises;
@@ -7,6 +8,12 @@ const calculateGrowthRate = (current, previous) =>
   ((current - previous) / previous) * 100;
 
 const predictViews = (currentViews) => currentViews * 24; // 簡易予測モデル
+
+const saveData = async (videoId, data) => {
+  const previousData = JSON.parse(await fs.readFile('data.json', 'utf-8') || '{}');
+  previousData[videoId] = data;
+  await fs.writeFile('data.json', JSON.stringify(previousData, null, 2));
+};
 
 (async () => {
   const videos = await fetchRecentVideos();
@@ -27,15 +34,10 @@ const predictViews = (currentViews) => currentViews * 24; // 簡易予測モデ�
 
       if (viewGrowth > 10 || likeGrowth > 5 || commentGrowth > 5) {
         await sendDiscordNotification(
-            { id: videoId, snippet },
-            { 
-              viewGrowth, 
-              likeGrowth, 
-              commentGrowth, 
-              predictedViews: predictViews(statistics.viewCount) 
-            },
-            sentiment
-          );
+          { id: videoId, snippet },
+          { viewGrowth, likeGrowth, commentGrowth, predictedViews: predictViews(statistics.viewCount) },
+          sentiment
+        );
       }
     }
 
