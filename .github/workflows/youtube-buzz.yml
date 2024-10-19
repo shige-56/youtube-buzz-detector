@@ -16,7 +16,7 @@ jobs:
           node-version: '18'
           
       - name: Install dependencies
-        run: npm ci  # 必要な依存関係をインストール
+        run: npm install
 
       - name: Run YouTube Buzz Detector script
         run: node scripts/fetch_and_notify.js  # スクリプト実行
