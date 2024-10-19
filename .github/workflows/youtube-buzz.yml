@@ -2,26 +2,33 @@ name: YouTube Buzz Detector
 
 on:
   schedule:
-    - cron: '0 * * * *'  # 毎時実行
+    # 毎時実行するスケジュール設定（例: 毎時間実行）
+    - cron: '0 * * * *'
+  workflow_dispatch: # 手動トリガーも可能にする
 
 jobs:
-  run:
+  youtube-buzz:
     runs-on: ubuntu-latest
 
     steps:
-      - name: リポジトリをチェックアウト
-        uses: actions/checkout@v3
+    - name: リポジトリをチェックアウト
+      uses: actions/checkout@v3
 
-      - name: Node.jsをセットアップ
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
+    - name: Node.js セットアップ
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
 
-      - name: 依存関係をインストール
-        run: npm install
+    - name: 依存関係のインストール
+      run: npm install
 
-      - name: スクリプトを実行
-        env:
-          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-        run: node scripts/fetch_and_notify.js
+    - name: 環境変数の設定確認
+      run: |
+        echo "YOUTUBE_API_KEY=${{ secrets.YOUTUBE_API_KEY }}"
+        echo "DISCORD_WEBHOOK_URL=${{ secrets.DISCORD_WEBHOOK_URL }}"
+
+    - name: スクリプトの実行
+      env:
+        YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+        DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      run: node scripts/fetch_and_notify.js
