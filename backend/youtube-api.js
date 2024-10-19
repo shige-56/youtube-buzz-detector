@@ -1,12 +1,33 @@
 const axios = require('axios');
-require('dotenv').config();
 
-const API_KEY = process.env.YOUTUBE_API_KEY;
+// YouTube動画情報を取得する関数
+async function fetchVideos() {
+    const apiKey = encodeURIComponent(process.env.YOUTUBE_API_KEY);
+console.log('APIキー:', apiKey); // エンコードされたAPIキーを確認
 
-async function fetchVideos(channelId) {
-    const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channelId}&order=date&type=video&key=${API_KEY}`;
-    const response = await axios.get(url);
-    return response.data.items;
+const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&order=date&type=video&maxResults=10&key=${apiKey}`;
+console.log('リクエストURL:', url); // 最終的なURLの確認
+
+    axios.get(url)
+  .then(response => {
+    console.log('APIからの応答:', response.data);
+  })
+  .catch(error => {
+    console.error('YouTube APIエラー:', error.response ? error.response.data : error.message);
+  });
 }
 
-module.exports = { fetchVideos };
+async function fetchChannelDetails(channelId) {
+    const apiKey = process.env.YOUTUBE_API_KEY;
+    const url = `https://www.googleapis.com/youtube/v3/channels?part=statistics&id=${channelId}&key=${apiKey}`;
+
+    try {
+        const response = await axios.get(url);
+        return response.data.items[0].statistics.subscriberCount;
+    } catch (error) {
+        console.error('チャンネル詳細取得エラー:', error.message);
+        throw error;
+    }
+}
+
+module.exports = { fetchVideos, fetchChannelDetails };
