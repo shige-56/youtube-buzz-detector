@@ -29,5 +29,7 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run script
-        run: node scripts/fetch_and_notify.js
+      - name: Discord通知テスト
+        run: node test_discord_notification.js
+      # - name: Run script
+      #   run: node scripts/fetch_and_notify.js
