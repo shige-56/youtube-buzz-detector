@@ -19,8 +19,9 @@ jobs:
       with:
         node-version: 18
 
+    # 依存関係のインストール
     - name: 依存関係のインストール
-      run: npm install
+      run: npm ci
 
     - name: 環境変数の設定確認
       run: |
