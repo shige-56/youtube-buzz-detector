@@ -5,7 +5,7 @@ on:
     branches:
       - main
   schedule:
-    - cron: '*/20 * * * *'  # 20分ごとの実行
+    - cron: '0 * * * *'  # 毎時00分に実行
   workflow_dispatch:
 
 jobs:
